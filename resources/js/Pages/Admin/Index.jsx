@@ -1,17 +1,71 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
 
-export default function Index({ auth, kaders }) {
+export default function Index({ auth, admins }) {
+    const getRoleBadge = (role) => {
+        const roleConfig = {
+            DPW: { color: "bg-purple-100 text-purple-800", label: "DPW" },
+            "Admin DPD": {
+                color: "bg-blue-100 text-blue-800",
+                label: "Admin DPD",
+            },
+            "Admin DPC": {
+                color: "bg-green-100 text-green-800",
+                label: "Admin DPC",
+            },
+        };
+
+        const config = roleConfig[role] || {
+            color: "bg-gray-100 text-gray-800",
+            label: role,
+        };
+        return (
+            <span
+                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${config.color}`}
+            >
+                {config.label}
+            </span>
+        );
+    };
+
+    const getStatusBadge = (status) => {
+        const statusConfig = {
+            Aktif: { color: "bg-green-100 text-green-800", label: "Aktif" },
+            Nonaktif: { color: "bg-red-100 text-red-800", label: "Nonaktif" },
+        };
+
+        const config = statusConfig[status] || {
+            color: "bg-gray-100 text-gray-800",
+            label: status,
+        };
+        return (
+            <span
+                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${config.color}`}
+            >
+                {config.label}
+            </span>
+        );
+    };
+
+    const getOrganisasiInfo = (admin) => {
+        if (admin.role === "Admin DPD" && admin.dpd) {
+            return admin.dpd.nama_dpd;
+        } else if (admin.role === "Admin DPC" && admin.dpc) {
+            return admin.dpc.nama_dpc;
+        }
+        return "-";
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
             header={
                 <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                    Manajemen Kader
+                    Manajemen Admin
                 </h2>
             }
         >
-            <Head title="Manajemen Kader" />
+            <Head title="Manajemen Admin" />
 
             <div className="py-8">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -20,16 +74,15 @@ export default function Index({ auth, kaders }) {
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900">
-                                    Data Kader
+                                    Data Administrator
                                 </h1>
                                 <p className="mt-2 text-sm text-gray-600">
-                                    Kelola semua data anggota (kader) yang
-                                    terdaftar
+                                    Kelola semua akun administrator sistem
                                 </p>
                             </div>
                             <div className="mt-4 sm:mt-0">
                                 <Link
-                                    href={route("kaders.create")}
+                                    href={route("admins.create")}
                                     className="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                                 >
                                     <svg
@@ -45,7 +98,7 @@ export default function Index({ auth, kaders }) {
                                             d="M12 4v16m8-8H4"
                                         />
                                     </svg>
-                                    Tambah Kader
+                                    Tambah Admin
                                 </Link>
                             </div>
                         </div>
@@ -55,24 +108,23 @@ export default function Index({ auth, kaders }) {
                             <div className="bg-white overflow-hidden shadow rounded-lg">
                                 <div className="px-4 py-5 sm:p-6">
                                     <dt className="text-sm font-medium text-gray-500 truncate">
-                                        Total Kader
+                                        Total Admin
                                     </dt>
                                     <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                                        {kaders.length}
+                                        {admins.length}
                                     </dd>
                                 </div>
                             </div>
                             <div className="bg-white overflow-hidden shadow rounded-lg">
                                 <div className="px-4 py-5 sm:p-6">
                                     <dt className="text-sm font-medium text-gray-500 truncate">
-                                        Kader Aktif
+                                        Admin Aktif
                                     </dt>
                                     <dd className="mt-1 text-3xl font-semibold text-green-600">
                                         {
-                                            kaders.filter(
-                                                (kader) =>
-                                                    kader.status_keanggotaan ===
-                                                    "Aktif"
+                                            admins.filter(
+                                                (admin) =>
+                                                    admin.status === "Aktif"
                                             ).length
                                         }
                                     </dd>
@@ -81,31 +133,28 @@ export default function Index({ auth, kaders }) {
                             <div className="bg-white overflow-hidden shadow rounded-lg">
                                 <div className="px-4 py-5 sm:p-6">
                                     <dt className="text-sm font-medium text-gray-500 truncate">
-                                        Kader Tidak Aktif
-                                    </dt>
-                                    <dd className="mt-1 text-3xl font-semibold text-orange-600">
-                                        {
-                                            kaders.filter(
-                                                (kader) =>
-                                                    kader.status_keanggotaan !==
-                                                    "Aktif"
-                                            ).length
-                                        }
-                                    </dd>
-                                </div>
-                            </div>
-                            <div className="bg-white overflow-hidden shadow rounded-lg">
-                                <div className="px-4 py-5 sm:p-6">
-                                    <dt className="text-sm font-medium text-gray-500 truncate">
-                                        Jabatan Struktural
+                                        Admin DPD
                                     </dt>
                                     <dd className="mt-1 text-3xl font-semibold text-blue-600">
                                         {
-                                            kaders.filter(
-                                                (kader) =>
-                                                    kader.jabatan &&
-                                                    kader.jabatan !==
-                                                        "Anggota Biasa"
+                                            admins.filter(
+                                                (admin) =>
+                                                    admin.role === "Admin DPD"
+                                            ).length
+                                        }
+                                    </dd>
+                                </div>
+                            </div>
+                            <div className="bg-white overflow-hidden shadow rounded-lg">
+                                <div className="px-4 py-5 sm:p-6">
+                                    <dt className="text-sm font-medium text-gray-500 truncate">
+                                        Admin DPC
+                                    </dt>
+                                    <dd className="mt-1 text-3xl font-semibold text-green-600">
+                                        {
+                                            admins.filter(
+                                                (admin) =>
+                                                    admin.role === "Admin DPC"
                                             ).length
                                         }
                                     </dd>
@@ -114,14 +163,15 @@ export default function Index({ auth, kaders }) {
                         </div>
                     </div>
 
-                    {/* Tabel Kader */}
+                    {/* Tabel Admin */}
                     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
                         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
                             <h3 className="text-lg leading-6 font-medium text-gray-900">
-                                Daftar Kader
+                                Daftar Administrator
                             </h3>
                             <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                                Daftar lengkap semua kader yang terdaftar
+                                Daftar lengkap semua administrator yang
+                                terdaftar
                             </p>
                         </div>
 
@@ -139,37 +189,25 @@ export default function Index({ auth, kaders }) {
                                             scope="col"
                                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                         >
-                                            Kader
+                                            Admin
                                         </th>
                                         <th
                                             scope="col"
                                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                         >
-                                            Identitas
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                        >
-                                            Asal Organisasi
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                        >
-                                            Kontak
-                                        </th>
-                                        <th
-                                            scope="col"
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                        >
-                                            Jabatan
+                                            Role & Organisasi
                                         </th>
                                         <th
                                             scope="col"
                                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                         >
                                             Status
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            Terdaftar
                                         </th>
                                         <th
                                             scope="col"
@@ -180,9 +218,9 @@ export default function Index({ auth, kaders }) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {kaders.map((kader, index) => (
+                                    {admins.map((admin, index) => (
                                         <tr
-                                            key={kader.id}
+                                            key={admin.id}
                                             className="hover:bg-gray-50 transition-colors duration-150"
                                         >
                                             <td className="px-6 py-4 whitespace-nowrap">
@@ -195,95 +233,55 @@ export default function Index({ auth, kaders }) {
                                                     <div className="flex-shrink-0 h-10 w-10">
                                                         <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
                                                             <span className="text-indigo-800 font-semibold text-sm">
-                                                                {kader.nama_lengkap.charAt(
-                                                                    0
-                                                                )}
+                                                                {admin.name
+                                                                    .charAt(0)
+                                                                    .toUpperCase()}
                                                             </span>
                                                         </div>
                                                     </div>
                                                     <div className="ml-4">
                                                         <div className="text-sm font-medium text-gray-900">
-                                                            {kader.nama_lengkap}
+                                                            {admin.name}
                                                         </div>
                                                         <div className="text-sm text-gray-500">
-                                                            {kader.email ||
-                                                                "Email belum diisi"}
+                                                            {admin.email}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                            <td className="px-6 py-4">
                                                 <div className="text-sm text-gray-900">
-                                                    {kader.no_kta ||
-                                                        "No KTA belum diisi"}
+                                                    {getRoleBadge(admin.role)}
                                                 </div>
-                                                <div className="text-sm text-gray-500">
-                                                    NIK:{" "}
-                                                    {kader.nik ||
-                                                        "NIK belum diisi"}
+                                                <div className="text-sm text-gray-500 mt-1">
+                                                    {getOrganisasiInfo(admin)}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">
-                                                    {kader.dpc?.nama_dpc ||
-                                                        "Belum terdaftar"}
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    {kader.dpc?.dpd?.nama_dpd ||
-                                                        "Belum terdaftar"}
-                                                </div>
+                                                {getStatusBadge(admin.status)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-900">
-                                                    {kader.no_hp || "-"}
+                                                    {new Date(
+                                                        admin.created_at
+                                                    ).toLocaleDateString(
+                                                        "id-ID"
+                                                    )}
                                                 </div>
                                                 <div className="text-sm text-gray-500">
-                                                    {kader.alamat_ktp
-                                                        ? `${kader.alamat_ktp.substring(
-                                                              0,
-                                                              20
-                                                          )}...`
-                                                        : "Alamat belum diisi"}
+                                                    {new Date(
+                                                        admin.created_at
+                                                    ).toLocaleTimeString(
+                                                        "id-ID"
+                                                    )}
                                                 </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">
-                                                    {kader.jabatan ||
-                                                        "Anggota Biasa"}
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    Bergabung:{" "}
-                                                    {kader.tanggal_bergabung
-                                                        ? new Date(
-                                                              kader.tanggal_bergabung
-                                                          ).toLocaleDateString(
-                                                              "id-ID"
-                                                          )
-                                                        : "-"}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span
-                                                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                        kader.status_keanggotaan ===
-                                                        "Aktif"
-                                                            ? "bg-green-100 text-green-800"
-                                                            : kader.status_keanggotaan ===
-                                                              "Tidak Aktif"
-                                                            ? "bg-red-100 text-red-800"
-                                                            : "bg-gray-100 text-gray-800"
-                                                    }`}
-                                                >
-                                                    {kader.status_keanggotaan ||
-                                                        "Belum Diverifikasi"}
-                                                </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <div className="flex justify-end space-x-2">
                                                     <Link
                                                         href={route(
-                                                            "kaders.edit",
-                                                            kader.id
+                                                            "admins.edit",
+                                                            admin.id
                                                         )}
                                                         className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150"
                                                     >
@@ -302,48 +300,53 @@ export default function Index({ auth, kaders }) {
                                                         </svg>
                                                         Edit
                                                     </Link>
-                                                    <Link
-                                                        href={route(
-                                                            "kaders.destroy",
-                                                            kader.id
-                                                        )}
-                                                        method="delete"
-                                                        as="button"
-                                                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150"
-                                                        onClick={(e) => {
-                                                            if (
-                                                                !confirm(
-                                                                    "Apakah Anda yakin ingin menghapus (mengarsip) kader ini?"
-                                                                )
-                                                            ) {
-                                                                e.preventDefault();
-                                                            }
-                                                        }}
-                                                    >
-                                                        <svg
-                                                            className="w-4 h-4 mr-1"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
+                                                    {admin.id !==
+                                                        auth.user.id && (
+                                                        <Link
+                                                            href={route(
+                                                                "admins.destroy",
+                                                                admin.id
+                                                            )}
+                                                            method="delete"
+                                                            as="button"
+                                                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150"
+                                                            onClick={(e) => {
+                                                                if (
+                                                                    !confirm(
+                                                                        "Apakah Anda yakin ingin menghapus admin ini?"
+                                                                    )
+                                                                ) {
+                                                                    e.preventDefault();
+                                                                }
+                                                            }}
                                                         >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                            />
-                                                        </svg>
-                                                        Hapus
-                                                    </Link>
+                                                            <svg
+                                                                className="w-4 h-4 mr-1"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                viewBox="0 0 24 24"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={
+                                                                        2
+                                                                    }
+                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                                />
+                                                            </svg>
+                                                            Hapus
+                                                        </Link>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
                                     ))}
 
-                                    {kaders.length === 0 && (
+                                    {admins.length === 0 && (
                                         <tr>
                                             <td
-                                                colSpan="8"
+                                                colSpan="6"
                                                 className="px-6 py-12 text-center"
                                             >
                                                 <div className="flex flex-col items-center justify-center">
@@ -357,23 +360,23 @@ export default function Index({ auth, kaders }) {
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
                                                             strokeWidth={2}
-                                                            d="M17 20h5v-2a3 3 0 00-5.356-2.13l-2.644 2.644M11 16v-4a4 4 0 10-8 0v4h8zM3 12a9 9 0 1118 0 9 9 0 01-18 0z"
+                                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                                                         />
                                                     </svg>
                                                     <h3 className="text-lg font-medium text-gray-900 mb-2">
-                                                        Belum ada data Kader
+                                                        Belum ada data Admin
                                                     </h3>
                                                     <p className="text-gray-500 mb-4">
                                                         Mulai dengan menambahkan
-                                                        kader pertama Anda.
+                                                        administrator pertama.
                                                     </p>
                                                     <Link
                                                         href={route(
-                                                            "kaders.create"
+                                                            "admins.create"
                                                         )}
                                                         className="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                                                     >
-                                                        Tambah Kader Pertama
+                                                        Tambah Admin Pertama
                                                     </Link>
                                                 </div>
                                             </td>
@@ -384,7 +387,7 @@ export default function Index({ auth, kaders }) {
                         </div>
 
                         {/* Pagination */}
-                        {kaders.length > 0 && (
+                        {admins.length > 0 && (
                             <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 sm:px-6">
                                 <div className="flex items-center justify-between">
                                     <div className="text-sm text-gray-700">
@@ -392,15 +395,15 @@ export default function Index({ auth, kaders }) {
                                         <span className="font-medium">1</span>{" "}
                                         sampai{" "}
                                         <span className="font-medium">
-                                            {kaders.length}
+                                            {admins.length}
                                         </span>{" "}
                                         dari{" "}
                                         <span className="font-medium">
-                                            {kaders.length}
+                                            {admins.length}
                                         </span>{" "}
                                         hasil
                                     </div>
-                                    {/* Tambahkan komponen pagination di sini */}
+                                    {/* Tambahkan komponen pagination di sini nanti */}
                                 </div>
                             </div>
                         )}

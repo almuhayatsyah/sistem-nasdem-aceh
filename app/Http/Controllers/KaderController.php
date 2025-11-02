@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kader;
-use App\Models\Dpc; // <-- Penting untuk form
+use App\Models\Dpc;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Validation\Rule; // <-- Penting untuk validasi update
-use Illuminate\Support\Facades\Storage; // <-- Untuk upload file nanti
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class KaderController extends Controller
 {
@@ -18,13 +18,13 @@ class KaderController extends Controller
   {
     $kaders = Kader::with([
       'dpc' => function ($query) {
-        $query->select('id', 'nama_dpc', 'dpd_id'); // Ambil DPC
+        $query->select('id', 'nama_dpc', 'dpd_id');
       },
       'dpc.dpd' => function ($query) {
-        $query->select('id', 'nama_dpd'); // Ambil DPD
+        $query->select('id', 'nama_dpd');
       }
     ])
-      ->select( // Pilih kolom yang perlu aja biar ringan
+      ->select(
         'id',
         'dpc_id',
         'nama_lengkap',
@@ -33,12 +33,14 @@ class KaderController extends Controller
         'no_hp',
         'email',
         'jabatan',
-        'status_keanggotaan'
+        'status_keanggotaan',
+        'alamat_ktp',
+        'tanggal_bergabung'
       )
       ->get();
 
-    return Inertia::render('Kader/Index', [
-      'kaders' => $kaders
+    return Inertia::render('kader/Index', [
+      "kaders" => $kaders
     ]);
   }
 
@@ -47,8 +49,8 @@ class KaderController extends Controller
    */
   public function create()
   {
-    return Inertia::render('Kader/Create', [
-      'dpcs' => Dpc::select('id', 'nama_dpc')->get() // Kirim daftar DPC ke form
+    return Inertia::render('kader/Create', [
+      'dpcs' => Dpc::select('id', 'nama_dpc')->get()
     ]);
   }
 
@@ -70,32 +72,25 @@ class KaderController extends Controller
       'no_kta' => 'required|string|max:255|unique:kaders,no_kta',
       'tanggal_bergabung' => 'nullable|date',
       'status_keanggotaan' => 'required|in:Aktif,Tidak Aktif,Meninggal Dunia,Pindah,Dipecat',
-      'jabatan' => 'required|string|max:255|default:Anggota Biasa',
+      'jabatan' => 'required|string|max:255',
       'alamat_ktp' => 'required|string',
       'alamat_domisili' => 'nullable|string',
       'no_hp' => 'nullable|string|max:255|unique:kaders,no_hp',
-
-      // Nanti kita urus upload-nya
-      // 'foto_profil' => 'nullable|image|max:2048', 
-      // 'scan_ktp' => 'nullable|image|max:2048',
-      // 'scan_kta' => 'nullable|image|max:2048',
     ]);
 
-    // Belum urus upload file
     Kader::create($validated);
 
     return redirect()->route('kaders.index')->with('message', 'Kader baru berhasil ditambahkan!');
   }
-
 
   /**
    * Show the form for editing the specified resource.
    */
   public function edit(Kader $kader)
   {
-    return Inertia::render('Kader/Edit', [
-      'kader' => $kader, // Kirim data kader yang mau diedit
-      'dpcs' => Dpc::select('id', 'nama_dpc')->get() // Kirim daftar DPC
+    return Inertia::render('kader/Edit', [
+      'kader' => $kader,
+      'dpcs' => Dpc::select('id', 'nama_dpc')->get()
     ]);
   }
 
@@ -123,7 +118,6 @@ class KaderController extends Controller
       'no_hp' => ['nullable', 'string', 'max:255', Rule::unique('kaders')->ignore($kader->id)],
     ]);
 
-    // Belum urus upload file
     $kader->update($validated);
 
     return redirect()->route('kaders.index')->with('message', 'Data kader berhasil diperbarui!');
@@ -134,7 +128,7 @@ class KaderController extends Controller
    */
   public function destroy(Kader $kader)
   {
-    $kader->delete(); // Ini akan jadi soft delete
+    $kader->delete();
     return redirect()->route('kaders.index')->with('message', 'Data kader berhasil dihapus (diarsip).');
   }
 }

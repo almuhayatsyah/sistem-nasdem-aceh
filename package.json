@@ -27,6 +27,7 @@
         "chart.js": "^4.5.1",
         "daisyui": "^5.3.10",
         "flowbite-react": "^0.12.10",
-        "react-chartjs-2": "^5.3.1"
+        "react-chartjs-2": "^5.3.1",
+        "recharts": "^3.3.0"
     }
 }

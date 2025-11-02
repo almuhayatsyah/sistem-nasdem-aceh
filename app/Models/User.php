@@ -4,14 +4,15 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo; // <-- TAMBAH INI
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles; // <-- WAJIB IMPORT INI
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-  use HasFactory, Notifiable, HasRoles; // <-- WAJIB TAMBAH 'HasRoles' DI SINI
+  use HasApiTokens, HasFactory, Notifiable, HasRoles; // Trait bawaan, biarkan saja
 
   /**
    * The attributes that are mass assignable.
@@ -22,9 +23,13 @@ class User extends Authenticatable
     'name',
     'email',
     'password',
-    'level',  // <-- Kolom kustom kita
-    'dpd_id', // <-- Kolom kustom kita
-    'dpc_id', // <-- Kolom kustom kita
+    'level',
+    // --- TAMBAHAN KITA ---
+    'role',
+    'status',
+    'dpd_id',
+    'dpc_id',
+    // --- BATAS TAMBAHAN ---
   ];
 
   /**
@@ -38,31 +43,40 @@ class User extends Authenticatable
   ];
 
   /**
-   * Get the attributes that should be cast.
+   * The attributes that should be cast.
    *
-   * @return array<string, string>
+   * @var array<string, string>
    */
-  protected function casts(): array
-  {
-    return [
-      'email_verified_at' => 'datetime',
-      'password' => 'hashed',
-    ];
-  }
+  protected $casts = [
+    'email_verified_at' => 'datetime',
+    'password' => 'hashed', // (Kalau Laravel 10+, kalau 9 'hashed' gak ada)
+
+    // --- TAMBAHAN KITA ---
+    'role' => 'string',
+    'status' => 'string',
+    // --- BATAS TAMBAHAN ---
+  ];
+
+
+  // =================================================================
+  // --- RELASI BARU UNTUK ADMIN ---
+  // =================================================================
 
   /**
-   * Relasi: Satu Admin (User) MILIK SATU DPD (Opsional)
+   * Relasi: Admin ini 'milik' DPD mana (jika dia Admin DPD).
    */
   public function dpd(): BelongsTo
   {
-    return $this->belongsTo(Dpd::class);
+    // Parameter: (Model Tujuan, Foreign Key di tabel 'users' ini)
+    return $this->belongsTo(Dpd::class, 'dpd_id');
   }
 
   /**
-   * Relasi: Satu Admin (User) MILIK SATU DPC (Opsional)
+   * Relasi: Admin ini 'milik' DPC mana (jika dia Admin DPC).
    */
   public function dpc(): BelongsTo
   {
-    return $this->belongsTo(Dpc::class);
+    // Parameter: (Model Tujuan, Foreign Key di tabel 'users' ini)
+    return $this->belongsTo(Dpc::class, 'dpc_id');
   }
 }

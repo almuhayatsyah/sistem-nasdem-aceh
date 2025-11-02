@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-// IMPORT DUA CONTROLLER INI
+
+// Import Controllers
 use App\Http\Controllers\DpdController;
 use App\Http\Controllers\DpcController;
-use App\Htpp\Controllers\KaderController;
+use App\Http\Controllers\KaderController;
+use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,6 +18,7 @@ use App\Htpp\Controllers\KaderController;
 |--------------------------------------------------------------------------
 */
 
+// Public Routes
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -24,34 +28,24 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Authenticated Routes - SEMUA USER YANG SUDAH LOGIN
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Dashboard - berbeda berdasarkan role
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-// --- RUTE STANDAR (AUTH) ---
-// (Biarkan ini, ini buat Profile, dll)
-Route::middleware('auth')->group(function () {
+    // Profile Routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
-// --- RUTE ADMIN (WAJIB LOGIN & ROLE DPW) ---
-// (Ini dia yang kita rapikan, Cok!)
-Route::middleware(['auth', 'verified', 'role:DPW'])->group(function () {
+    // Resource Routes - TANPA MIDDLEWARE ROLE DPW
+    Route::resource('dpds', DpdController::class)->except(['show']);
+    Route::resource('dpcs', DpcController::class)->except(['show']);
+    Route::resource('kaders', KaderController::class)->except(['show']);
+    Route::resource('admins', AdminController::class)->except(['show']);
 
-    // Rute DPD (Kabupaten/Kota)
-    Route::resource('dpds', DpdController::class)
-        ->except(['show']);
-
-    // Rute DPC (Kecamatan) - JADIKAN RUTE BIASA (TIDAK NESTED)
-    // Ini yang akan kita panggil dari sidebar.
-    // Nama route: dpcs.index, dpcs.create, dll.
-    Route::resource('dpcs', DpcController::class)
-        ->except(['show']);
-
-    // Routes untuk kaders
-    Route::resource('kaders', \App\Http\Controllers\KaderController::class)->except(['show']);
+    // API Route untuk dashboard
+    Route::get('/api/dashboard/stats', [DashboardController::class, 'getStats'])->name('dashboard.stats');
 });
 
 require __DIR__ . '/auth.php';

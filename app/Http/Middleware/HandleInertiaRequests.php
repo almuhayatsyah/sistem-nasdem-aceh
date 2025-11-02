@@ -17,7 +17,7 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determine the current asset version.
      */
-    public function version(Request $request): ?string
+    public function version(Request $request): string|null
     {
         return parent::version($request);
     }
@@ -32,7 +32,18 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? [
+                    ...$request->user()->toArray(),
+                    'role' => $request->user()->role, // Role custom dari database
+                    'dpd_id' => $request->user()->dpd_id, // Untuk Admin DPD
+                    'dpc_id' => $request->user()->dpc_id, // Untuk Admin DPC
+                    'penugasan_dpd' => $request->user()->dpd, // Data DPD penugasan
+                    'penugasan_dpc' => $request->user()->dpc, // Data DPC penugasan
+                ] : null,
+            ],
+            'flash' => [
+                'message' => fn() => $request->session()->get('message'),
+                'error' => fn() => $request->session()->get('error'),
             ],
         ];
     }

@@ -57,7 +57,7 @@ class DpdController extends Controller
         return redirect()->route('dpds.index')->with('message', 'DPD baru berhasil ditambahkan!');
     }
 
-    // Kita GAK PAKAI show()
+
 
     /**
      * Show the form for editing the specified resource.
