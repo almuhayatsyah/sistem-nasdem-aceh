@@ -109,7 +109,6 @@ class AdminController extends Controller
       'dpd_id' => 'nullable|required_if:role,Admin DPD|exists:dpds,id',
       'dpc_id' => 'nullable|required_if:role,Admin DPC|exists:dpcs,id',
 
-      // Password gak wajib diisi pas update
       'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
     ]);
 

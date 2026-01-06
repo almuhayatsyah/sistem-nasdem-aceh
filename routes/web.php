@@ -28,24 +28,53 @@ Route::get('/', function () {
     ]);
 });
 
-// Authenticated Routes - SEMUA USER YANG SUDAH LOGIN
+// Authenticated Routes - DENGAN ROLE-BASED AUTHORIZATION
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Dashboard - berbeda berdasarkan role
+    // Dashboard - semua user yang login bisa akses
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Profile Routes
+    // Profile Routes - semua user bisa manage profile sendiri
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Resource Routes - TANPA MIDDLEWARE ROLE DPW
-    Route::resource('dpds', DpdController::class)->except(['show']);
-    Route::resource('dpcs', DpcController::class)->except(['show']);
-    Route::resource('kaders', KaderController::class)->except(['show']);
-    Route::resource('admins', AdminController::class)->except(['show']);
-
     // API Route untuk dashboard
     Route::get('/api/dashboard/stats', [DashboardController::class, 'getStats'])->name('dashboard.stats');
+
+    // ============================================
+    // SUPER ADMIN & ADMIN DPW - Full Access
+    // ============================================
+    Route::middleware(['role:super-admin|admin-dpw'])->group(function () {
+        // DPD Management - hanya Super Admin & Admin DPW
+        Route::resource('dpds', DpdController::class)->except(['show']);
+        
+        // Admin Management - hanya Super Admin & Admin DPW
+        Route::resource('admins', AdminController::class)->except(['show']);
+    });
+
+    // ============================================
+    // ADMIN DPW, ADMIN DPD - Manage DPC & Kader
+    // ============================================
+    Route::middleware(['role:super-admin|admin-dpw|admin-dpd'])->group(function () {
+        // DPC Management
+        Route::resource('dpcs', DpcController::class)->except(['show']);
+    });
+
+    // ============================================
+    // SEMUA ADMIN (DPW, DPD, DPC) - Manage Kader
+    // ============================================
+    Route::middleware(['role:super-admin|admin-dpw|admin-dpd|admin-dpc'])->group(function () {
+        // Kader Management
+        Route::resource('kaders', KaderController::class)->except(['show']);
+    });
+
+    // ============================================
+    // VIEW ONLY ROUTES - Semua role bisa view
+    // ============================================
+    Route::middleware(['permission:view dpd|view dpc|view kader'])->group(function () {
+        // Jika user hanya punya permission view, redirect ke index pages
+        // Routes ini sudah di-handle di controller dengan authorization
+    });
 });
 
 require __DIR__ . '/auth.php';

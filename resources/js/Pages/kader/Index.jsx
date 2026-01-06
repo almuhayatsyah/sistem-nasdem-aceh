@@ -1,7 +1,24 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
+import { useState } from "react";
 
-export default function Index({ auth, kaders }) {
+export default function Index({ auth, kaders = [], filters = {}, error }) {
+    const [search, setSearch] = useState(filters?.q || "");
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        router.get(
+            route("kaders.index"),
+            { q: search },
+            { preserveState: true, preserveScroll: true }
+        );
+    };
+
+    const handleReset = () => {
+        setSearch("");
+        router.get(route("kaders.index"), {}, { preserveState: true });
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -12,6 +29,17 @@ export default function Index({ auth, kaders }) {
             }
         >
             <Head title="Manajemen Kader" />
+
+            {error && (
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mb-4">
+                    <div
+                        className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
+                        role="alert"
+                    >
+                        <span className="block sm:inline">{error}</span>
+                    </div>
+                </div>
+            )}
 
             <div className="py-8">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -58,7 +86,7 @@ export default function Index({ auth, kaders }) {
                                         Total Kader
                                     </dt>
                                     <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                                        {kaders.length}
+                                        {kaders?.length || 0}
                                     </dd>
                                 </div>
                             </div>
@@ -68,13 +96,11 @@ export default function Index({ auth, kaders }) {
                                         Kader Aktif
                                     </dt>
                                     <dd className="mt-1 text-3xl font-semibold text-green-600">
-                                        {
-                                            kaders.filter(
-                                                (kader) =>
-                                                    kader.status_keanggotaan ===
-                                                    "Aktif"
-                                            ).length
-                                        }
+                                        {kaders?.filter(
+                                            (kader) =>
+                                                kader?.status_keanggotaan ===
+                                                "Aktif"
+                                        )?.length || 0}
                                     </dd>
                                 </div>
                             </div>
@@ -84,13 +110,11 @@ export default function Index({ auth, kaders }) {
                                         Kader Tidak Aktif
                                     </dt>
                                     <dd className="mt-1 text-3xl font-semibold text-orange-600">
-                                        {
-                                            kaders.filter(
-                                                (kader) =>
-                                                    kader.status_keanggotaan !==
-                                                    "Aktif"
-                                            ).length
-                                        }
+                                        {kaders?.filter(
+                                            (kader) =>
+                                                kader?.status_keanggotaan !==
+                                                "Aktif"
+                                        )?.length || 0}
                                     </dd>
                                 </div>
                             </div>
@@ -100,14 +124,12 @@ export default function Index({ auth, kaders }) {
                                         Jabatan Struktural
                                     </dt>
                                     <dd className="mt-1 text-3xl font-semibold text-blue-600">
-                                        {
-                                            kaders.filter(
-                                                (kader) =>
-                                                    kader.jabatan &&
-                                                    kader.jabatan !==
-                                                        "Anggota Biasa"
-                                            ).length
-                                        }
+                                        {kaders?.filter(
+                                            (kader) =>
+                                                kader?.jabatan &&
+                                                kader.jabatan !==
+                                                    "Anggota Biasa"
+                                        )?.length || 0}
                                     </dd>
                                 </div>
                             </div>
@@ -117,12 +139,79 @@ export default function Index({ auth, kaders }) {
                     {/* Tabel Kader */}
                     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
                         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">
-                                Daftar Kader
-                            </h3>
-                            <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                                Daftar lengkap semua kader yang terdaftar
-                            </p>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                                        Daftar Kader
+                                    </h3>
+                                    <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                                        Daftar lengkap semua kader yang
+                                        terdaftar
+                                    </p>
+                                </div>
+                                {/* Search Form */}
+                                <div className="mt-4 sm:mt-0">
+                                    <form
+                                        onSubmit={handleSearch}
+                                        className="flex gap-2"
+                                    >
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg
+                                                    className="h-5 w-5 text-gray-400"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={search}
+                                                onChange={(e) =>
+                                                    setSearch(e.target.value)
+                                                }
+                                                placeholder="Cari kader..."
+                                                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            />
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150"
+                                        >
+                                            <svg
+                                                className="w-4 h-4 mr-2"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                                />
+                                            </svg>
+                                            Cari
+                                        </button>
+                                        {search && (
+                                            <button
+                                                type="button"
+                                                onClick={handleReset}
+                                                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150"
+                                            >
+                                                Reset
+                                            </button>
+                                        )}
+                                    </form>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="overflow-x-auto">
@@ -180,167 +269,177 @@ export default function Index({ auth, kaders }) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {kaders.map((kader, index) => (
-                                        <tr
-                                            key={kader.id}
-                                            className="hover:bg-gray-50 transition-colors duration-150"
-                                        >
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">
-                                                    {index + 1}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center">
-                                                    <div className="flex-shrink-0 h-10 w-10">
-                                                        <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                                            <span className="text-indigo-800 font-semibold text-sm">
-                                                                {kader.nama_lengkap.charAt(
-                                                                    0
-                                                                )}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="ml-4">
-                                                        <div className="text-sm font-medium text-gray-900">
-                                                            {kader.nama_lengkap}
-                                                        </div>
-                                                        <div className="text-sm text-gray-500">
-                                                            {kader.email ||
-                                                                "Email belum diisi"}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">
-                                                    {kader.no_kta ||
-                                                        "No KTA belum diisi"}
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    NIK:{" "}
-                                                    {kader.nik ||
-                                                        "NIK belum diisi"}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">
-                                                    {kader.dpc?.nama_dpc ||
-                                                        "Belum terdaftar"}
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    {kader.dpc?.dpd?.nama_dpd ||
-                                                        "Belum terdaftar"}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">
-                                                    {kader.no_hp || "-"}
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    {kader.alamat_ktp
-                                                        ? `${kader.alamat_ktp.substring(
-                                                              0,
-                                                              20
-                                                          )}...`
-                                                        : "Alamat belum diisi"}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">
-                                                    {kader.jabatan ||
-                                                        "Anggota Biasa"}
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    Bergabung:{" "}
-                                                    {kader.tanggal_bergabung
-                                                        ? new Date(
-                                                              kader.tanggal_bergabung
-                                                          ).toLocaleDateString(
-                                                              "id-ID"
-                                                          )
-                                                        : "-"}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span
-                                                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                        kader.status_keanggotaan ===
-                                                        "Aktif"
-                                                            ? "bg-green-100 text-green-800"
-                                                            : kader.status_keanggotaan ===
-                                                              "Tidak Aktif"
-                                                            ? "bg-red-100 text-red-800"
-                                                            : "bg-gray-100 text-gray-800"
-                                                    }`}
-                                                >
-                                                    {kader.status_keanggotaan ||
-                                                        "Belum Diverifikasi"}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <div className="flex justify-end space-x-2">
-                                                    <Link
-                                                        href={route(
-                                                            "kaders.edit",
-                                                            kader.id
-                                                        )}
-                                                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150"
-                                                    >
-                                                        <svg
-                                                            className="w-4 h-4 mr-1"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                                            />
-                                                        </svg>
-                                                        Edit
-                                                    </Link>
-                                                    <Link
-                                                        href={route(
-                                                            "kaders.destroy",
-                                                            kader.id
-                                                        )}
-                                                        method="delete"
-                                                        as="button"
-                                                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150"
-                                                        onClick={(e) => {
-                                                            if (
-                                                                !confirm(
-                                                                    "Apakah Anda yakin ingin menghapus (mengarsip) kader ini?"
+                                    {kaders && kaders.length > 0
+                                        ? kaders.map((kader, index) => (
+                                              <tr
+                                                  key={kader.id}
+                                                  className="hover:bg-gray-50 transition-colors duration-150"
+                                              >
+                                                  <td className="px-6 py-4 whitespace-nowrap">
+                                                      <div className="text-sm font-medium text-gray-900">
+                                                          {index + 1}
+                                                      </div>
+                                                  </td>
+                                                  <td className="px-6 py-4">
+                                                      <div className="flex items-center">
+                                                          <div className="flex-shrink-0 h-10 w-10">
+                                                              <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                                                  <span className="text-indigo-800 font-semibold text-sm">
+                                                                      {kader.nama_lengkap.charAt(
+                                                                          0
+                                                                      )}
+                                                                  </span>
+                                                              </div>
+                                                          </div>
+                                                          <div className="ml-4">
+                                                              <div className="text-sm font-medium text-gray-900">
+                                                                  {
+                                                                      kader.nama_lengkap
+                                                                  }
+                                                              </div>
+                                                              <div className="text-sm text-gray-500">
+                                                                  {kader.email ||
+                                                                      "Email belum diisi"}
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                  </td>
+                                                  <td className="px-6 py-4 whitespace-nowrap">
+                                                      <div className="text-sm text-gray-900">
+                                                          {kader.no_kta ||
+                                                              "No KTA belum diisi"}
+                                                      </div>
+                                                      <div className="text-sm text-gray-500">
+                                                          NIK:{" "}
+                                                          {kader.nik ||
+                                                              "NIK belum diisi"}
+                                                      </div>
+                                                  </td>
+                                                  <td className="px-6 py-4 whitespace-nowrap">
+                                                      <div className="text-sm text-gray-900">
+                                                          {kader.dpc
+                                                              ?.nama_dpc ||
+                                                              "Belum terdaftar"}
+                                                      </div>
+                                                      <div className="text-sm text-gray-500">
+                                                          {kader.dpc?.dpd
+                                                              ?.nama_dpd ||
+                                                              "Belum terdaftar"}
+                                                      </div>
+                                                  </td>
+                                                  <td className="px-6 py-4 whitespace-nowrap">
+                                                      <div className="text-sm text-gray-900">
+                                                          {kader.no_hp || "-"}
+                                                      </div>
+                                                      <div className="text-sm text-gray-500">
+                                                          {kader.alamat_ktp
+                                                              ? `${kader.alamat_ktp.substring(
+                                                                    0,
+                                                                    20
+                                                                )}...`
+                                                              : "Alamat belum diisi"}
+                                                      </div>
+                                                  </td>
+                                                  <td className="px-6 py-4 whitespace-nowrap">
+                                                      <div className="text-sm text-gray-900">
+                                                          {kader.jabatan ||
+                                                              "Anggota Biasa"}
+                                                      </div>
+                                                      <div className="text-sm text-gray-500">
+                                                          Bergabung:{" "}
+                                                          {kader.tanggal_bergabung
+                                                              ? new Date(
+                                                                    kader.tanggal_bergabung
+                                                                ).toLocaleDateString(
+                                                                    "id-ID"
                                                                 )
-                                                            ) {
-                                                                e.preventDefault();
-                                                            }
-                                                        }}
-                                                    >
-                                                        <svg
-                                                            className="w-4 h-4 mr-1"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                            />
-                                                        </svg>
-                                                        Hapus
-                                                    </Link>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                              : "-"}
+                                                      </div>
+                                                  </td>
+                                                  <td className="px-6 py-4 whitespace-nowrap">
+                                                      <span
+                                                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                              kader.status_keanggotaan ===
+                                                              "Aktif"
+                                                                  ? "bg-green-100 text-green-800"
+                                                                  : kader.status_keanggotaan ===
+                                                                    "Tidak Aktif"
+                                                                  ? "bg-red-100 text-red-800"
+                                                                  : "bg-gray-100 text-gray-800"
+                                                          }`}
+                                                      >
+                                                          {kader.status_keanggotaan ||
+                                                              "Belum Diverifikasi"}
+                                                      </span>
+                                                  </td>
+                                                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                      <div className="flex justify-end space-x-2">
+                                                          <Link
+                                                              href={route(
+                                                                  "kaders.edit",
+                                                                  kader.id
+                                                              )}
+                                                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150"
+                                                          >
+                                                              <svg
+                                                                  className="w-4 h-4 mr-1"
+                                                                  fill="none"
+                                                                  stroke="currentColor"
+                                                                  viewBox="0 0 24 24"
+                                                              >
+                                                                  <path
+                                                                      strokeLinecap="round"
+                                                                      strokeLinejoin="round"
+                                                                      strokeWidth={
+                                                                          2
+                                                                      }
+                                                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                                  />
+                                                              </svg>
+                                                              Edit
+                                                          </Link>
+                                                          <Link
+                                                              href={route(
+                                                                  "kaders.destroy",
+                                                                  kader.id
+                                                              )}
+                                                              method="delete"
+                                                              as="button"
+                                                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150"
+                                                              onClick={(e) => {
+                                                                  if (
+                                                                      !confirm(
+                                                                          "Apakah Anda yakin ingin menghapus (mengarsip) kader ini?"
+                                                                      )
+                                                                  ) {
+                                                                      e.preventDefault();
+                                                                  }
+                                                              }}
+                                                          >
+                                                              <svg
+                                                                  className="w-4 h-4 mr-1"
+                                                                  fill="none"
+                                                                  stroke="currentColor"
+                                                                  viewBox="0 0 24 24"
+                                                              >
+                                                                  <path
+                                                                      strokeLinecap="round"
+                                                                      strokeLinejoin="round"
+                                                                      strokeWidth={
+                                                                          2
+                                                                      }
+                                                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                                  />
+                                                              </svg>
+                                                              Hapus
+                                                          </Link>
+                                                      </div>
+                                                  </td>
+                                              </tr>
+                                          ))
+                                        : null}
 
-                                    {kaders.length === 0 && (
+                                    {(!kaders || kaders.length === 0) && (
                                         <tr>
                                             <td
                                                 colSpan="8"
@@ -384,7 +483,7 @@ export default function Index({ auth, kaders }) {
                         </div>
 
                         {/* Pagination */}
-                        {kaders.length > 0 && (
+                        {kaders && kaders.length > 0 && (
                             <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 sm:px-6">
                                 <div className="flex items-center justify-between">
                                     <div className="text-sm text-gray-700">
@@ -392,11 +491,11 @@ export default function Index({ auth, kaders }) {
                                         <span className="font-medium">1</span>{" "}
                                         sampai{" "}
                                         <span className="font-medium">
-                                            {kaders.length}
+                                            {kaders?.length || 0}
                                         </span>{" "}
                                         dari{" "}
                                         <span className="font-medium">
-                                            {kaders.length}
+                                            {kaders?.length || 0}
                                         </span>{" "}
                                         hasil
                                     </div>

@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'check.dpc.access' => \App\Http\Middleware\CheckDpcAccess::class,
+            'check.kader.access' => \App\Http\Middleware\CheckKaderAccess::class,
         ]);
         // --- BATAS TAMBAHAN ---
 

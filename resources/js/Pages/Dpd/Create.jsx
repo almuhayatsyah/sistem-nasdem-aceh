@@ -138,17 +138,20 @@ export default function Create({ auth }) {
                                         htmlFor="telepon"
                                         value="Telepon"
                                     />
+
                                     <TextInput
                                         id="telepon"
                                         name="telepon"
+                                        type="number" // <-- pindah ke sini bro
                                         value={data.telepon}
                                         className="mt-1 block w-full"
-                                        autoComplete="telepon"
+                                        autoComplete="tel"
                                         onChange={(e) =>
                                             setData("telepon", e.target.value)
                                         }
-                                        placeholder="Contoh: 021-1234567"
+                                        placeholder="Contoh: 08123456789"
                                     />
+
                                     <InputError
                                         message={errors.telepon}
                                         className="mt-2"
@@ -173,6 +176,7 @@ export default function Create({ auth }) {
                                     <InputError
                                         message={errors.email}
                                         className="mt-2"
+                                        placeholder="masukan email bang"
                                     />
                                 </div>
 

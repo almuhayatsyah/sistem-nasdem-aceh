@@ -109,7 +109,6 @@ export default function Create({ auth, dpds }) {
                                         className="mt-2"
                                     />
                                 </div>
-
                                 {/* DPD Induk */}
                                 <div>
                                     <InputLabel
@@ -143,7 +142,6 @@ export default function Create({ auth, dpds }) {
                                         className="mt-2"
                                     />
                                 </div>
-
                                 {/* Status */}
                                 <div>
                                     <InputLabel
@@ -169,30 +167,31 @@ export default function Create({ auth, dpds }) {
                                         className="mt-2"
                                     />
                                 </div>
-
                                 {/* Telepon */}
                                 <div>
                                     <InputLabel
                                         htmlFor="telepon"
                                         value="Telepon"
                                     />
+
                                     <TextInput
                                         id="telepon"
                                         name="telepon"
+                                        type="number" // <-- pindah ke sini bro
                                         value={data.telepon}
                                         className="mt-1 block w-full"
-                                        autoComplete="telepon"
+                                        autoComplete="tel"
                                         onChange={(e) =>
                                             setData("telepon", e.target.value)
                                         }
-                                        placeholder="Contoh: 021-7654321"
+                                        placeholder="Contoh: 08123456789"
                                     />
+
                                     <InputError
                                         message={errors.telepon}
                                         className="mt-2"
                                     />
                                 </div>
-
                                 {/* Email */}
                                 <div>
                                     <InputLabel htmlFor="email" value="Email" />
@@ -213,7 +212,6 @@ export default function Create({ auth, dpds }) {
                                         className="mt-2"
                                     />
                                 </div>
-
                                 {/* Alamat */}
                                 <div className="sm:col-span-2">
                                     <InputLabel
@@ -236,7 +234,6 @@ export default function Create({ auth, dpds }) {
                                         className="mt-2"
                                     />
                                 </div>
-
                                 {/* Pengurus */}
                                 <div className="sm:col-span-2">
                                     <div className="border-t border-gray-200 pt-6">

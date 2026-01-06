@@ -14,16 +14,28 @@ class DpcController extends Controller
      * Display a listing of the resource.
      * Rute: dpcs (GET) - Dipanggil dari Sidebar
      */
-    public function index() // <-- KITA HAPUS (Dpd $dpd)
+    public function index()
     {
-        // Ambil SEMUA DPC, bukan cuma dari 1 DPD
-        $dpcs = Dpc::with('dpd') // Ambil data induk DPD-nya (buat tabel)
-            ->withCount('kaders') // HITUNG kadernya
-            ->withCount('users')  // HITUNG adminnya
-            ->get(); // Ambil datanya
+        $user = auth()->user();
+        
+        // Query builder untuk DPC
+        $query = Dpc::with('dpd')
+            ->withCount('kaders')
+            ->withCount('users');
+        
+        // Filter berdasarkan role
+        if ($user->hasRole('admin-dpd')) {
+            // Admin DPD hanya lihat DPC di DPD-nya
+            $query->where('dpd_id', $user->dpd_id);
+        } elseif ($user->hasRole('admin-dpc')) {
+            // Admin DPC hanya lihat DPC-nya sendiri
+            $query->where('id', $user->dpc_id);
+        }
+        // Super Admin & Admin DPW lihat semua (no filter)
+        
+        $dpcs = $query->get();
 
         return Inertia::render('Dpc/Index', [
-            // 'dpd' => $dpd, <-- Kita hapus, karena ini halaman semua DPC
             'dpcs' => $dpcs,
         ]);
     }
@@ -32,15 +44,24 @@ class DpcController extends Controller
      * Show the form for creating a new resource.
      * Rute: dpcs/create (GET)
      */
-    public function create() // <-- KITA HAPUS (Dpd $dpd)
+    public function create()
     {
-        // Karena kita gak tau mau buat DPC untuk DPD mana,
-        // kita ambil SEMUA DPD untuk jadi pilihan dropdown di form.
-        $dpds = Dpd::orderBy('nama_dpd', 'asc')->get(['id', 'nama_dpd']);
+        $user = auth()->user();
+        
+        // Query untuk DPD
+        $query = Dpd::orderBy('nama_dpd', 'asc');
+        
+        // Filter berdasarkan role
+        if ($user->hasRole('admin-dpd')) {
+            // Admin DPD hanya bisa buat DPC di DPD-nya
+            $query->where('id', $user->dpd_id);
+        }
+        // Super Admin & Admin DPW bisa pilih semua DPD
+        
+        $dpds = $query->get(['id', 'nama_dpd']);
 
         return Inertia::render('Dpc/Create', [
-            // 'dpd' => $dpd, <-- Kita ganti
-            'dpds' => $dpds, // <-- Kirim semua DPD
+            'dpds' => $dpds,
         ]);
     }
 

@@ -139,16 +139,20 @@ export default function Edit({ auth, dpd }) {
                                         htmlFor="telepon"
                                         value="Telepon"
                                     />
+
                                     <TextInput
                                         id="telepon"
                                         name="telepon"
+                                        type="number" // <-- pindah ke sini bro
                                         value={data.telepon}
                                         className="mt-1 block w-full"
-                                        autoComplete="telepon"
+                                        autoComplete="tel"
                                         onChange={(e) =>
                                             setData("telepon", e.target.value)
                                         }
+                                        placeholder="Contoh: 08123456789"
                                     />
+
                                     <InputError
                                         message={errors.telepon}
                                         className="mt-2"

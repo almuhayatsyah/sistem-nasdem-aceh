@@ -171,8 +171,26 @@ export default function AuthenticatedLayout({ header, children }) {
                             <NavLink
                                 href={route("admins.index")}
                                 active={route().current("admins.index")}
-                                className="group flex items-center rounded-xl px-3 py-3 text-sm font-medium transition-all duration-200 hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98]"
+                                // Tambahkan 'gap-x-2' di sini
+                                className="group flex items-center gap-x-2 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-200 hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98]"
                             >
+                                {/* Kode SVG Ikon 'Users' */}
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth="1.5"
+                                    stroke="currentColor"
+                                    // Atur ukuran dan warna ikon di sini
+                                    className="h-5 w-5 text-white"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm-2.25 0a.75.75 0 0 0 .75.75h.008a.75.75 0 0 0 .75-.75v.008a.75.75 0 0 0-.75-.75h-.008a.75.75 0 0 0-.75.75v-.008Z"
+                                    />
+                                </svg>
+
                                 <span className="text-white font-medium">
                                     Manajemen Admin
                                 </span>
